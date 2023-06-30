@@ -1,0 +1,13 @@
+# Project exclude paths
+build/.cmake
+build/CMakeFiles
+build/src
+build/Testing
+build/.ninja_deps
+build/.ninja_log
+build/build.ninja
+build/cmake_install.cmake
+build/CMakeCache.txt
+build/glfw3.dll
+build/glew32.dll
+build/LearnOpenGL.exe
