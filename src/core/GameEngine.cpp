@@ -8,7 +8,7 @@
 #include "LearnOpenGL/Shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
-#include <iostream>
+#include "LearnOpenGL/Model.h"
 
 using RawPtr = void*;
 
@@ -17,7 +17,7 @@ windowManager(std::make_unique<WindowManager>(640, 480, "Game")),
 camera(windowManager->getCamera()) {}
 
 void GameEngine::run() {
-    struct Vertex {
+    /*struct Vertex {
         struct Position {
             float x;
             float y;
@@ -103,20 +103,17 @@ void GameEngine::run() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     Shader objectShader("resources/shaders/object.vs", "resources/shaders/object.fs");
-    Shader lampShader("resources/shaders/lamp.vs", "resources/shaders/lamp.fs");
+    Shader lampShader("resources/shaders/lamp.vs", "resources/shaders/lamp.fs");*/
 
-    GLuint lampTex = load_texture("resources/textures/redstone_lamp_on.png", GL_TEXTURE0);
-    GLuint diffuseMap = load_texture("resources/textures/container2.png", GL_TEXTURE0);
-    GLuint specularMap = load_texture("resources/textures/lighting_maps_specular_color.png", GL_TEXTURE1);
+    Shader modelShader("resources/shaders/model.vs", "resources/shaders/model.fs");
+    Model ourModel("resources/model/backpack/backpack.obj");
 
     glm::vec3 lightPos(2.2f, 2.0f, 3.0f);
     glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
-//    float radius = glm::length(lightPos);
+    GLfloat deltaTime = 0.0f;
+    GLfloat lastFrame = 0.0f;
 
-    float deltaTime;
-    float lastFrame = 0.0f;
-//    double alpha = 0, theta = 0;
     while (!windowManager->shouldClose()) {
         /*theta += 1.1;
         if (alpha > 360) alpha = 0;
@@ -138,14 +135,14 @@ void GameEngine::run() {
         windowManager->pollEvents();
         handleInput(deltaTime);
         windowManager->clearScreen();
-        auto& viewPos = camera.getPosition();
+        /*auto& viewPos = camera.getPosition();
         objectShader.use();
         objectShader.setUniformMat4f("uProjection", glm::value_ptr(projection));
         objectShader.setUniformMat4f("uView", glm::value_ptr(view));
         objectShader.setUniformMat4f("uModel", glm::value_ptr(model));
         objectShader.setUniform3f("uViewPos", viewPos.x, viewPos.y, viewPos.z);
 
-        objectShader.setUniform1f("uMaterial.shininess", 64.0f);
+        objectShader.setUniform1f("uMaterial.shininess", 32);
         objectShader.setUniform1i("uMaterial.diffuse", 0);
         objectShader.setUniform1i("uMaterial.specular", 1);
 
@@ -178,31 +175,20 @@ void GameEngine::run() {
         glBindVertexArray(vao[1]);
         glDrawArrays(GL_TRIANGLES, 0, sizeof vertices / sizeof vertices[0]);
         glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);*/
+
+        modelShader.use();
+        modelShader.setUniformMat4f("uProjection", glm::value_ptr(projection));
+        modelShader.setUniformMat4f("uView", glm::value_ptr(view));
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.2f));
+        modelShader.setUniformMat4f("uModel", glm::value_ptr(model));
+
+        ourModel.draw(modelShader);
 
         windowManager->swapBuffers();
     }
-}
-
-GLuint GameEngine::load_texture(const char *path, int slot) {
-    int width, height, nrChannels;
-    unsigned char* textureData = stbi_load(path, &width, &height, &nrChannels, 0);
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glActiveTexture(slot);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    if (textureData) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cerr << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(textureData);
-    return texture;
 }
 
 void GameEngine::handleInput(GLfloat deltaTime) {
